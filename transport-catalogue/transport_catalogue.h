@@ -21,6 +21,19 @@ struct Bus {
 	std::vector<Stop*> buses;
 };
 
+struct InfoAboutRoute {
+	std::string name_route;
+	size_t counter_stops;
+	size_t unique_stops;
+	double lenght = 0.0;
+};
+
+struct InfoAnoutStop {
+	std::string name_stop;
+	std::vector<std::string_view> buses_on_stop;
+	bool found = false;
+};
+
 class TransportCatalogue {
 	// Реализуйте класс самостоятельно
 public:
@@ -29,8 +42,8 @@ public:
 	void AddBus(std::string_view name, std::vector<std::string_view> route);
 	Bus FindRoute(std::string_view name) const;//поиск маршрута по имени
 	Stop FindStop(std::string_view name) const ;//поиск остановки по иени
-	void InfoAboutRoute(std::string_view name, std::ostream& out) const ;
-	void InfoAboutStop(std::string_view name, std::ostream& out) const;
+	InfoAboutRoute GetInfoAboutRoute(std::string_view name) const ;
+	InfoAnoutStop GetInfoAboutStop(std::string_view name) const;
 
 
 private:

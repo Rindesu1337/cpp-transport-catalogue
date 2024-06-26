@@ -49,46 +49,47 @@ Bus TransportCatalogue::FindRoute(std::string_view name) const {
     return Bus{};
 }
 
-void TransportCatalogue::InfoAboutRoute(std::string_view name, std::ostream& out) const {
-    Bus nash = FindRoute(name);
+InfoAboutRoute TransportCatalogue::GetInfoAboutRoute(std::string_view name) const {
 
-    if (nash.bus_name == "") {
-        out << "Bus "<<  name << ": "<< "not found" << std::endl;
-        return ;
-    }
-
-    out << "Bus "<<  nash.bus_name << ": " << nash.buses.size() << " stops on route, ";
-
+    Bus nash = TransportCatalogue::FindRoute(name);
     std::unordered_set<std::string_view> unic_stops;
-    double lenght = 0.0;
     Coordinates proshlay;
     bool is_first = true;
+    InfoAboutRoute result;
+
+    if (nash.bus_name == "") {
+        return result;
+    }
 
     for (auto& elem : nash.buses) {
         if (is_first) {
             proshlay = elem->coordinates;
             is_first = false;
         } else {
-            lenght += ComputeDistance(proshlay, elem->coordinates);
+            result.lenght += ComputeDistance(proshlay, elem->coordinates);
             proshlay = elem->coordinates;
         }
         unic_stops.insert(elem->stop_name);
     }
 
-    out << unic_stops.size() << " unique stops, " << lenght << " route length" << std::endl;
-   
-    return;
+    result.name_route = nash.bus_name;
+    result.counter_stops = nash.buses.size();
+    result.unique_stops = unic_stops.size();
+
+    return result;
 }
 
-void TransportCatalogue::InfoAboutStop(std::string_view name, std::ostream& out) const {
+InfoAnoutStop TransportCatalogue::GetInfoAboutStop(std::string_view name) const {
+    InfoAnoutStop result;  
+
     if (stop_get_buses_.count(name) == 0) {
-        out << "Stop " << name << ": " << "not found" << std::endl;
-        return;
+        return result;
     }
 
-    if (stop_get_buses_.at(name).empty()) {
-        out << "Stop " << name << ": " << "no buses" << std::endl;
-        return;
+    result.found = true;
+
+    if (stop_get_buses_.at(name).empty()) {     
+        return result;
     }
 
     std::vector<std::string_view> nash;
@@ -97,16 +98,9 @@ void TransportCatalogue::InfoAboutStop(std::string_view name, std::ostream& out)
     }
 
     sort(nash.begin(),nash.end());
-    bool is_first = true;
 
-    for (auto& bus : nash) {
-        if (is_first) {
-            out << "Stop " << name << ": " << "buses";
-            is_first = false;
-        }
-        
-        out << " " << bus;
-    }
+    result.name_stop = name;
+    result.buses_on_stop = nash;
 
-    out << std::endl;
-}
+    return result;
+} 
