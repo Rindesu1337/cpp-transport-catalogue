@@ -79,28 +79,24 @@ InfoAboutRoute TransportCatalogue::GetInfoAboutRoute(std::string_view name) cons
     return result;
 }
 
-InfoAnoutStop TransportCatalogue::GetInfoAboutStop(std::string_view name) const {
-    InfoAnoutStop result;  
-
+std::vector<std::string_view> TransportCatalogue::GetInfoAboutStop(std::string_view name) const {  
     if (stop_get_buses_.count(name) == 0) {
-        return result;
+        return std::vector<std::string_view>{};
     }
 
-    result.found = true;
+    std::vector<std::string_view> result(1);
 
     if (stop_get_buses_.at(name).empty()) {     
         return result;
     }
 
-    std::vector<std::string_view> nash;
+    result.clear();
+
     for (auto& elem : stop_get_buses_.at(name)){
-        nash.push_back(elem);
+        result.push_back(elem);
     }
 
-    sort(nash.begin(),nash.end());
-
-    result.name_stop = name;
-    result.buses_on_stop = nash;
+    sort(result.begin(),result.end());
 
     return result;
 } 

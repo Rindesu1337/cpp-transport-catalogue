@@ -25,21 +25,21 @@ void ParseAndPrintStat(const transport::TransportCatalogue& tansport_catalogue, 
     }
 
     if (command == "Stop") {
-        transport::InfoAnoutStop inf_stop = tansport_catalogue.GetInfoAboutStop(name);
+        std::vector<std::string_view> inf_stop = tansport_catalogue.GetInfoAboutStop(name);
 
-        if (inf_stop.found == false) {
+        if (inf_stop.empty()) {
             output << "Stop " << name << ": " << "not found" << std::endl;
             return;
         }
 
-        if (inf_stop.buses_on_stop.empty()) {
+        if (inf_stop[0] == "") {
             output << "Stop " << name << ": " << "no buses" << std::endl;
             return;
         }
 
         bool is_first = true;
 
-        for (auto& bus : inf_stop.buses_on_stop) {
+        for (auto& bus : inf_stop) {
             if (is_first) {
                 output << "Stop " << name << ": " << "buses";
                 is_first = false;

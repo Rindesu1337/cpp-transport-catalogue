@@ -28,12 +28,6 @@ struct InfoAboutRoute {
 	double lenght = 0.0;
 };
 
-struct InfoAnoutStop {
-	std::string name_stop;
-	std::vector<std::string_view> buses_on_stop;
-	bool found = false;
-};
-
 class TransportCatalogue {
 	// Реализуйте класс самостоятельно
 public:
@@ -43,7 +37,7 @@ public:
 	Bus FindRoute(std::string_view name) const;//поиск маршрута по имени
 	Stop FindStop(std::string_view name) const ;//поиск остановки по иени
 	InfoAboutRoute GetInfoAboutRoute(std::string_view name) const ;
-	InfoAnoutStop GetInfoAboutStop(std::string_view name) const;
+	std::vector<std::string_view> GetInfoAboutStop(std::string_view name) const;
 
 
 private:
