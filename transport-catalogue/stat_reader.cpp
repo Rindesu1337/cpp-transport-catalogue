@@ -19,7 +19,7 @@ void ParseAndPrintStat(const transport::TransportCatalogue& tansport_catalogue, 
             return;
         }
 
-        output << "Bus "<< inf_route.name_route << ": " << inf_route.counter_stops << " stops on route, " << inf_route.unique_stops << " unique stops, " << inf_route.lenght << " route length" << std::endl;
+        output << "Bus "<< inf_route.name_route << ": " << inf_route.counter_stops << " stops on route, " << inf_route.unique_stops << " unique stops, " << inf_route.fact_lenght << " route length, " << inf_route.fact_lenght/inf_route.geo_lenght << " curvature" << std::endl;
 
         return;
     }

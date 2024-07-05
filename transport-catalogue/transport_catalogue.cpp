@@ -9,6 +9,8 @@ void TransportCatalogue::AddStop(std::string_view name, Coordinates shirina_viso
     elem.stop_name = name;
     elem.coordinates = shirina_visota;
 
+    //std::cout << shirina_visota.lat << " " << shirina_visota.lng << std::endl;
+
     stops_.push_back(std::move(elem));
 
     stopname_to_stops_.insert({stops_.back().stop_name, &stops_.back()});
@@ -33,6 +35,28 @@ void TransportCatalogue::AddBus(std::string_view name, std::vector<std::string_v
     busname_to_route_.insert({route_.back().bus_name, &route_.back()});
 }
 
+void TransportCatalogue::AddDistanse(std::string_view name, std::vector<std::pair<std::string_view, int>> distanse_to_stop){
+    if (distanse_to_stop.empty()) {
+        return;
+    }
+
+    std::pair<Stop*, Stop*> name_to_name2, name2_to_name;
+
+    name_to_name2.first = stopname_to_stops_.at(name);
+    name2_to_name.second = stopname_to_stops_.at(name);
+
+    for (auto elem : distanse_to_stop) {
+        name_to_name2.second = stopname_to_stops_.at(elem.first);
+        name2_to_name.first = stopname_to_stops_.at(elem.first);
+
+        distanse_to_stops_[name_to_name2] = elem.second;
+
+        if (distanse_to_stops_.count(name2_to_name) == 0) {
+            distanse_to_stops_[name2_to_name] = elem.second;
+        }
+    }
+}
+
 Stop TransportCatalogue::FindStop(std::string_view name) const {
     if (stopname_to_stops_.count(name) > 0) {
         return *(stopname_to_stops_.at(name));
@@ -53,7 +77,7 @@ InfoAboutRoute TransportCatalogue::GetInfoAboutRoute(std::string_view name) cons
 
     Bus nash = TransportCatalogue::FindRoute(name);
     std::unordered_set<std::string_view> unic_stops;
-    Coordinates proshlay;
+    Stop* proshlay;
     bool is_first = true;
     InfoAboutRoute result;
 
@@ -63,11 +87,18 @@ InfoAboutRoute TransportCatalogue::GetInfoAboutRoute(std::string_view name) cons
 
     for (auto& elem : nash.buses) {
         if (is_first) {
-            proshlay = elem->coordinates;
+            proshlay = elem;
             is_first = false;
         } else {
-            result.lenght += ComputeDistance(proshlay, elem->coordinates);
-            proshlay = elem->coordinates;
+            result.geo_lenght += ComputeDistance(proshlay->coordinates, elem->coordinates);
+
+            std::pair<Stop*, Stop*> pair_stops;
+            pair_stops.first = proshlay;
+            pair_stops.second = elem;
+
+            result.fact_lenght += distanse_to_stops_.at(pair_stops); 
+
+            proshlay = elem;
         }
         unic_stops.insert(elem->stop_name);
     }

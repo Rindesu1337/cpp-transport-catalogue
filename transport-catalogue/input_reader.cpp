@@ -20,6 +20,7 @@ Coordinates ParseCoordinates(std::string_view str) {
     }
 
     auto not_space2 = str.find_first_not_of(' ', comma + 1);
+    //auto comma2 = str.find(',', comma + 1);
 
     double lat = std::stod(std::string(str.substr(not_space, comma - not_space)));
     double lng = std::stod(std::string(str.substr(not_space2)));
@@ -76,6 +77,35 @@ std::vector<std::string_view> ParseRoute(std::string_view route) {
     return results;
 }
 
+std::vector<std::pair<std::string_view, int>> ParseDistanse(std::string_view distanse_str) {
+    std::vector<std::pair<std::string_view, int>> result;
+
+
+    auto comma = distanse_str.find(',');
+    auto comma2 = distanse_str.find(',', comma + 1);
+
+    if (comma2 == distanse_str.npos) {
+        return result;
+    }
+
+    std::string_view str_distanses = distanse_str.substr(comma2 +1);
+    std::vector<std::string_view> distanse_to_stop = Split(str_distanses, ',');
+
+    for (auto& str : distanse_to_stop) {
+        std::pair<std::string_view, int> elem;
+
+        auto space = str.find(' ');
+        space = str.find(' ', space + 1);
+
+        elem.first = str.substr(space + 1);
+        elem.second = std::stoi(std::string(str.substr(0,str.find('m'))));
+
+        result.push_back(elem);
+    }
+
+    return result;
+}
+
 input_reader::CommandDescription ParseCommandDescription(std::string_view line) {
     auto colon_pos = line.find(':');
     if (colon_pos == line.npos) {
@@ -111,6 +141,12 @@ void input_reader::InputReader::ApplyCommands([[maybe_unused]] transport::Transp
     for (auto& command_ : commands_) {
         if (command_.command == "Stop") {
             catalogue.AddStop(input_reader::detail::Trim(command_.id), input_reader::detail::ParseCoordinates(command_.description));
+        }
+    }
+
+    for (auto& command_ : commands_) {
+        if (command_.command == "Stop") {
+            catalogue.AddDistanse(input_reader::detail::Trim(command_.id), input_reader::detail::ParseDistanse(command_.description));
         }
     }
 
