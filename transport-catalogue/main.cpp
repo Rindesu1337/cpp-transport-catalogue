@@ -1,33 +1,58 @@
-#include <iostream>
-#include <string>
+#include "json_reader.h"
+#include "request_handler.h"
+#include <fstream>
 
-#include "input_reader.h"
-#include "stat_reader.h"
-
-using namespace std;
+using namespace std::literals;
 
 int main() {
+    /*
+     * Примерная структура программы:
+     *
+     * Считать JSON из stdin
+     * Построить на его основе JSON базу данных транспортного справочника
+     * Выполнить запросы к справочнику, находящиеся в массива "stat_requests", построив JSON-массив
+     * с ответами Вывести в stdout ответы в виде JSON
+     */
+
+
+
+    json_reader::JsonReader Reader;
     transport::TransportCatalogue catalogue;
 
-    int base_request_count;
-    cin >> base_request_count >> ws;
+    // Opening the input file stream and associate it with 
+    // "input.txt" 
+     /* std::ifstream fileIn("input.txt"); 
+  
+    // Redirecting cin to read from "input.txt" 
+    std::cin.rdbuf(fileIn.rdbuf()); 
+  
+    // Opening the output file stream and associate it with 
+    // "output.txt" 
+    std::ofstream fileOut("output.txt"); 
+  
+    // Redirecting cout to write to "output.txt" 
+    std::cout.rdbuf(fileOut.rdbuf());   */
 
-    {
-        using namespace input_reader;
-        InputReader reader;
-        for (int i = 0; i < base_request_count; ++i) {
-            string line;
-            getline(cin, line);
-            reader.ParseLine(line);
-        }
-        reader.ApplyCommands(catalogue);
-    }
+    json::Document doc(json::Load(std::cin));
 
-    int stat_request_count;
-    cin >> stat_request_count >> ws;
-    for (int i = 0; i < stat_request_count; ++i) {
-        string line;
-        getline(cin, line);
-        ParseAndPrintStat(catalogue, line, cout);
-    }
+
+    //std::cout << doc.GetRoot().AsMap().at("base_requests"s).AsArray().at(1).AsMap().at("type"s).AsString() << std::endl;
+
+    Reader.ParseCommand(doc);
+
+    Reader.ApplyCommands(catalogue);
+
+    render::MapRender Render(Reader.GetRenderSettings());
+
+    request::RequestHander Stat(catalogue, Render);
+
+    Stat.GetCoordinatesForRoute(Reader.GetCommandForBus());
+
+    /* svg::Document map_doc = Stat.RenderMap();
+
+    map_doc.Render(std::cout);  */   
+
+    Stat.PrintStat(Reader.GetRequest(), std::cout);
+    
+
 }

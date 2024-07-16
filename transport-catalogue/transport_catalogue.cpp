@@ -2,6 +2,8 @@
 #include <algorithm>
 
 using namespace transport;
+using namespace geo;
+
 
 void TransportCatalogue::AddStop(std::string_view name, Coordinates shirina_visota){
     Stop elem;
@@ -35,7 +37,7 @@ void TransportCatalogue::AddBus(std::string_view name, std::vector<std::string_v
     busname_to_route_.insert({route_.back().bus_name, &route_.back()});
 }
 
-void TransportCatalogue::AddDistanse(std::string_view name, std::vector<std::pair<std::string_view, int>> distanse_to_stop){
+void TransportCatalogue::AddDistanse(std::string_view name, std::vector<std::pair<std::string_view, double>> distanse_to_stop){
     if (distanse_to_stop.empty()) {
         return;
     }
@@ -104,8 +106,8 @@ InfoAboutRoute TransportCatalogue::GetInfoAboutRoute(std::string_view name) cons
     }
 
     result.name_route = nash.bus_name;
-    result.counter_stops = nash.buses.size();
-    result.unique_stops = unic_stops.size();
+    result.counter_stops = static_cast<int>(nash.buses.size());
+    result.unique_stops = static_cast<int>(unic_stops.size());
 
     return result;
 }
