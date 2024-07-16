@@ -9,6 +9,7 @@
 #include "json.h"
 #include "transport_catalogue.h"
 #include "map_renderer.h"
+#include "request_handler.h"
 
 namespace json_reader {
 
@@ -19,7 +20,7 @@ class JsonReader {
 
     void ApplyCommands(transport::TransportCatalogue& catalogue ) const;
 
-    std::vector<CommandRequest> GetRequest() const;
+    json::Node GetJSONByRequests(transport::TransportCatalogue& catalogue, request::RequestHander& req_hend);
 
     render::RenderSettings GetRenderSettings() const;
 

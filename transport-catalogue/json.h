@@ -20,21 +20,14 @@ public:
     using runtime_error::runtime_error;
 };
 
-class Node {
+class Node final : private std::variant<std::nullptr_t, bool, int, double, std::string, Dict, Array> {
 public:
    /* Реализуйте Node, используя std::variant */
     using Value = std::variant<std::nullptr_t, bool, int, double, std::string, Dict, Array>;
+    using variant::variant;
 
-    Node() = default;
-    Node(std::nullptr_t);
-    Node(bool value);
-    Node(int value);
-    Node(double value);
-    Node(std::string value);
-    Node(Dict dic);
-    Node(Array arr);
 
-    const Value& GetValue() const { return value_; }
+    const Value& GetValue() const { return *this; }
 
     bool IsInt() const;
     bool IsDouble() const;
@@ -52,8 +45,7 @@ public:
     const Array& AsArray() const;
     const Dict& AsMap() const;
 
-private:
-    Value value_;
+
 };
 
 bool operator==(const Node& lhs, const Node& rhs);

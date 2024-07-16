@@ -169,8 +169,66 @@ namespace json_reader {
         }    
     }
 
-    std::vector<CommandRequest> JsonReader::GetRequest() const {
-        return com_request_;
+    json::Node JsonReader::GetJSONByRequests(transport::TransportCatalogue& catalogue, request::RequestHander& req_hend) {
+        json::Array arr_node;
+
+    for (const auto& req : com_request_) {
+        if (req.type == "Stop"s) {
+            std::vector<std::string_view> inf_stop = catalogue.GetInfoAboutStop(req.name);
+
+            sort(inf_stop.begin(), inf_stop.end());
+
+            if (inf_stop.empty() ) {
+                json::Node dict_node{json::Dict{{"request_id"s, req.id},
+                                                {"error_message"s , std::string("not found"s)}}};
+                arr_node.push_back(dict_node);
+            } else if (inf_stop.at(0) == "") {
+                json::Array arr;
+                json::Node dict_node{json::Dict{{"request_id", req.id}, {"buses"s, arr}}};
+                arr_node.push_back(dict_node);
+            } else {
+                json::Array arr;
+
+                for (auto& bus : inf_stop) {
+                    std::string s;
+                    s = bus;
+                    json::Node elem(s);
+                    arr.push_back(elem);
+                }
+
+
+                json::Node dict_node{json::Dict{{"request_id"s, req.id},
+                                                {"buses"s, arr}}};
+                arr_node.push_back(dict_node);
+            }
+        } else if (req.type == "Bus"s) {
+            InfoAboutRoute inf_rout = catalogue.GetInfoAboutRoute(req.name);
+
+            if (inf_rout.name_route == "") {
+                json::Node dict_node {json::Dict{{"request_id"s, req.id},
+                                                 {"error_message"s, std::string("not found"s)}}};
+                arr_node.push_back(dict_node);
+            } else {
+                double curvature = inf_rout.fact_lenght/inf_rout.geo_lenght;
+                json::Node dict_node{json::Dict{{"request_id"s, req.id},
+                                            {"curvature"s, curvature},
+                                            {"route_length"s, inf_rout.fact_lenght},
+                                            {"stop_count"s, static_cast<int>(inf_rout.counter_stops)},
+                                            {"unique_stop_count"s, static_cast<int>(inf_rout.unique_stops)}}};
+
+                arr_node.push_back(dict_node);
+            }
+        } else if (req.type == "Map"s) {
+            std::ostringstream strm;
+            req_hend.RenderMap().Render(strm);
+
+            json::Node dict_node{json::Dict{{"request_id"s, req.id},
+                                            {"map"s, strm.str()}}};
+            arr_node.push_back(dict_node);
+        }
+    }
+
+    return arr_node;
     }
 
     render::RenderSettings JsonReader::GetRenderSettings() const {

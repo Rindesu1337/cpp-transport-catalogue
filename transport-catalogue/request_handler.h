@@ -51,8 +51,6 @@ public:
 
     RequestHander(const transport::TransportCatalogue& db, const render::MapRender& renderer);
 
-    void PrintStat(const std::vector<CommandRequest>& request, std::ostream& out);
-
     void GetCoordinatesForRoute(const std::vector<CommandForBus>& route);
 
     svg::Document RenderMap() const;

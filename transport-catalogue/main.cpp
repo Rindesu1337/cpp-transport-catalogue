@@ -52,7 +52,8 @@ int main() {
 
     map_doc.Render(std::cout);  */   
 
-    Stat.PrintStat(Reader.GetRequest(), std::cout);
+    //Stat.PrintStat(Reader.GetRequest(), std::cout);
     
-
+    json::Document doc_out(Reader.GetJSONByRequests(catalogue, Stat));
+    json::Print(doc_out, std::cout);
 }
