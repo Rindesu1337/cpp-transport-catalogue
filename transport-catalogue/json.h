@@ -28,6 +28,7 @@ public:
 
 
     const Value& GetValue() const { return *this; }
+    Value& GetValue(){ return *this; }
 
     bool IsInt() const;
     bool IsDouble() const;

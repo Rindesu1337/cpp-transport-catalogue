@@ -170,7 +170,8 @@ namespace json_reader {
     }
 
     json::Node JsonReader::GetJSONByRequests(transport::TransportCatalogue& catalogue, request::RequestHander& req_hend) {
-        json::Array arr_node;
+        json::Builder result;
+        result.StartArray();
 
     for (const auto& req : com_request_) {
         if (req.type == "Stop"s) {
@@ -179,56 +180,39 @@ namespace json_reader {
             sort(inf_stop.begin(), inf_stop.end());
 
             if (inf_stop.empty() ) {
-                json::Node dict_node{json::Dict{{"request_id"s, req.id},
-                                                {"error_message"s , std::string("not found"s)}}};
-                arr_node.push_back(dict_node);
+                result.StartDict().Key("request_id"s).Value(req.id).Key("error_message"s).Value(std::string("not found"s)).EndDict();
+                
             } else if (inf_stop.at(0) == "") {
-                json::Array arr;
-                json::Node dict_node{json::Dict{{"request_id", req.id}, {"buses"s, arr}}};
-                arr_node.push_back(dict_node);
+                result.StartDict().Key("request_id"s).Value(req.id).Key("buses"s).StartArray().EndArray().EndDict();
+               
             } else {
-                json::Array arr;
+                result.StartDict().Key("request_id"s).Value(req.id).Key("buses"s).StartArray();
 
                 for (auto& bus : inf_stop) {
                     std::string s;
                     s = bus;
-                    json::Node elem(s);
-                    arr.push_back(elem);
+                    result.Value(s);
                 }
-
-
-                json::Node dict_node{json::Dict{{"request_id"s, req.id},
-                                                {"buses"s, arr}}};
-                arr_node.push_back(dict_node);
+                result.EndArray().EndDict();
             }
         } else if (req.type == "Bus"s) {
             InfoAboutRoute inf_rout = catalogue.GetInfoAboutRoute(req.name);
 
             if (inf_rout.name_route == "") {
-                json::Node dict_node {json::Dict{{"request_id"s, req.id},
-                                                 {"error_message"s, std::string("not found"s)}}};
-                arr_node.push_back(dict_node);
+                result.StartDict().Key("request_id"s).Value(req.id).Key("error_message"s).Value(std::string("not found"s)).EndDict();
             } else {
                 double curvature = inf_rout.fact_lenght/inf_rout.geo_lenght;
-                json::Node dict_node{json::Dict{{"request_id"s, req.id},
-                                            {"curvature"s, curvature},
-                                            {"route_length"s, inf_rout.fact_lenght},
-                                            {"stop_count"s, static_cast<int>(inf_rout.counter_stops)},
-                                            {"unique_stop_count"s, static_cast<int>(inf_rout.unique_stops)}}};
-
-                arr_node.push_back(dict_node);
+                result.StartDict().Key("request_id"s).Value(req.id).Key("curvature"s).Value(curvature).Key("route_length"s).Value(inf_rout.fact_lenght)
+                .Key("stop_count"s).Value(static_cast<int>(inf_rout.counter_stops)).Key("unique_stop_count"s).Value(static_cast<int>(inf_rout.unique_stops)).EndDict();
             }
         } else if (req.type == "Map"s) {
             std::ostringstream strm;
             req_hend.RenderMap().Render(strm);
-
-            json::Node dict_node{json::Dict{{"request_id"s, req.id},
-                                            {"map"s, strm.str()}}};
-            arr_node.push_back(dict_node);
+            result.StartDict().Key("request_id"s).Value(req.id).Key("map"s).Value(strm.str()).EndDict();
         }
     }
 
-    return arr_node;
+    return result.EndArray().Build();
     }
 
     render::RenderSettings JsonReader::GetRenderSettings() const {
