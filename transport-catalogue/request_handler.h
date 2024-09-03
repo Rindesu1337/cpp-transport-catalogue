@@ -41,6 +41,8 @@ private:
 #include "json.h"
 #include "svg.h"
 #include "map_renderer.h"
+#include "router.h"
+#include "transport_router.h"
 #include <algorithm>
 
 namespace request{
@@ -49,16 +51,19 @@ class RequestHander {
 public:
     //void SetRequest(const std::vector<domain::CommandRequest>& request);
 
-    RequestHander(const transport::TransportCatalogue& db, const render::MapRender& renderer);
+    RequestHander(const transport::TransportCatalogue& db, const render::MapRender& renderer, const graph::Router<double>& router);
 
     void GetCoordinatesForRoute(const std::vector<CommandForBus>& route);
 
     svg::Document RenderMap() const;
 
+    std::optional<graph::Router<double>::RouteInfo> GetRoute(const std::string_view from, const std::string_view to) const;
+
 private:
     //std::vector<domain::CommandRequest> com_and_request_;
     const transport::TransportCatalogue& db_;
     const render::MapRender& renderer_;
+    const graph::Router<double>& router_;
 
     std::map<std::pair<std::string_view, bool>, std::vector<svg::Point>> sort_vec_coor_;
     std::map<std::string, svg::Point> stop_name_to_point;

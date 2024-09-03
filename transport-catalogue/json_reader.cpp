@@ -66,6 +66,10 @@ namespace json_reader::detail{
                 result.type = value.AsString();
             } else if (key == "name"s) {
                 result.name = value.AsString();
+            } else if (key == "from"s) {
+                result.from = value.AsString();
+            } else if (key == "to"s) {
+                result.to = value.AsString();
             }
         }
 
@@ -117,7 +121,9 @@ namespace json_reader {
                 for (const auto& elem : value.AsArray()){
                     com_request_.push_back(detail::FillRequest(elem.AsMap()));
                 }
-            } else if (key == "render_settings"s) {
+            }
+
+            if (key == "render_settings"s) {
                 if (value.IsMap()) {
                     json::Node elem(value.AsMap()); 
                     render_s_.width = elem.AsMap().at("width"s).AsDouble();
@@ -149,6 +155,15 @@ namespace json_reader {
                     std::cout << "not a map"s << std::endl;
                 }
             }
+
+            if (key == "routing_settings"s) {
+                json::Node elem(value.AsMap());
+
+                routing_setings_.bus_velocity = elem.AsMap().at("bus_velocity"s).AsDouble();
+                routing_setings_.bus_wait_time = elem.AsMap().at("bus_wait_time"s).AsInt();
+                routing_setings_.bus_velocity *= 1000;
+                routing_setings_.bus_velocity /= 60;
+            }
         }     
     }
 
@@ -165,11 +180,11 @@ namespace json_reader {
         }
 
         for (const auto& elem : com_for_bus_) {
-            catalogue.AddBus(elem.name, elem.routes);
+            catalogue.AddBus(elem.name, elem.routes, elem.is_roundtrip);
         }    
     }
 
-    json::Node JsonReader::GetJSONByRequests(transport::TransportCatalogue& catalogue, request::RequestHander& req_hend) {
+    json::Node JsonReader::GetJSONByRequests(const transport::TransportCatalogue& catalogue, const request::RequestHander& req_hend,const tr::TransportRouter& tr_router) {
         json::Builder result;
         result.StartArray();
 
@@ -209,6 +224,24 @@ namespace json_reader {
             std::ostringstream strm;
             req_hend.RenderMap().Render(strm);
             result.StartDict().Key("request_id"s).Value(req.id).Key("map"s).Value(strm.str()).EndDict();
+
+        } else if (req.type == "Route"s) {
+            result.StartDict();
+            std::optional<graph::Router<double>::RouteInfo> weith = req_hend.GetRoute(req.from, req.to);
+            if (weith == std::nullopt) {
+                result.Key("error_message"s).Value("not found"s).Key("request_id"s).Value(req.id).EndDict();
+            } else {
+                result.Key("items"s).StartArray();
+                for (auto&& id : (*weith).edges) {
+                    EdgeSettings edge_s = tr_router.GetEdgeSettings(id);
+                    if (edge_s.type_ == "Wait"s) {
+                        result.StartDict().Key("stop_name"s).Value(edge_s.stop_name_).Key("time"s).Value(edge_s.time_).Key("type"s).Value(edge_s.type_).EndDict();
+                    } else if (edge_s.type_ == "Bus"s) {
+                        result.StartDict().Key("bus"s).Value(edge_s.bus_name_).Key("span_count"s).Value(edge_s.span_count_).Key("time"s).Value(edge_s.time_).Key("type"s).Value(edge_s.type_).EndDict();
+                    }
+                }
+                result.EndArray().Key("request_id"s).Value(req.id).Key("total_time"s).Value((*weith).weight).EndDict();
+            }
         }
     }
 
@@ -221,6 +254,10 @@ namespace json_reader {
 
     std::vector<CommandForBus> JsonReader::GetCommandForBus() const {
         return com_for_bus_;
+    }
+
+    const RoutingSettings& JsonReader::GetRoutingSettings() const {
+        return routing_setings_;
     }
 
 }

@@ -18,10 +18,48 @@ void TransportCatalogue::AddStop(std::string_view name, Coordinates shirina_viso
     stopname_to_stops_.insert({stops_.back().stop_name, &stops_.back()});
 
     stop_get_buses_[stops_.back().stop_name];
+
+    stop_to_index_[&stops_.back()].first = counter_; 
+    stop_to_index_[&stops_.back()].second = ++counter_;
+    ++counter_;
 }
 
-void TransportCatalogue::AddBus(std::string_view name, std::vector<std::string_view> route){
+size_t TransportCatalogue::GetStopCounter() const {
+    return counter_;
+}
+
+std::pair<size_t, size_t> TransportCatalogue::GetStopIndex(const Stop* stop) const {
+    return stop_to_index_.at(stop);
+}
+
+const std::deque<Bus>& TransportCatalogue::GetAllBuses() const {
+    return route_;
+}
+
+const std::deque<Stop>& TransportCatalogue::GetAllStops() const {
+    return stops_;
+}
+
+std::optional<double> TransportCatalogue::GetDistanseForPair(const Stop* stop_1, const Stop* stop_2) const {
+    auto it = distanse_to_stops_.find(std::make_pair(stop_1, stop_2));
+
+        if (it == distanse_to_stops_.end()) {
+            auto it_reverse = distanse_to_stops_.find(std::make_pair(stop_2, stop_1));
+
+            if (it_reverse == distanse_to_stops_.end()) {
+                return std::nullopt;
+            }
+
+            return it_reverse->second;
+        }
+
+    return it->second;
+}
+
+void TransportCatalogue::AddBus(std::string_view name, std::vector<std::string_view> route, bool is_roundt){
     Bus elem;
+
+    elem.is_roundtrip = is_roundt;
 
     elem.bus_name = name;
     for (auto& stop : route) {
@@ -59,12 +97,12 @@ void TransportCatalogue::AddDistanse(std::string_view name, std::vector<std::pai
     }
 }
 
-Stop TransportCatalogue::FindStop(std::string_view name) const {
+Stop* TransportCatalogue::FindStop(std::string_view name) const {
     if (stopname_to_stops_.count(name) > 0) {
-        return *(stopname_to_stops_.at(name));
+        return stopname_to_stops_.at(name);
     }
     
-    return Stop{};
+    return nullptr;
 }
 
 Bus TransportCatalogue::FindRoute(std::string_view name) const {

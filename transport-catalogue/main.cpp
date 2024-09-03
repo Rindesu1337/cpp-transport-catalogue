@@ -1,5 +1,6 @@
 #include "json_reader.h"
 #include "request_handler.h"
+#include "transport_router.h"
 #include <fstream>
 
 using namespace std::literals;
@@ -44,16 +45,19 @@ int main() {
 
     render::MapRender Render(Reader.GetRenderSettings());
 
-    request::RequestHander Stat(catalogue, Render);
+    graph::DirectedWeightedGraph<double> router_graph(catalogue.GetStopCounter()); // вершин 2 * кол-во остановок
+
+    tr::TransportRouter transport_router(router_graph,catalogue, Reader.GetRoutingSettings());
+    transport_router.CreateGraph();
+
+    graph::Router<double> router(router_graph);
+
+    request::RequestHander Stat(catalogue, Render, router);
 
     Stat.GetCoordinatesForRoute(Reader.GetCommandForBus());
 
-    /* svg::Document map_doc = Stat.RenderMap();
 
-    map_doc.Render(std::cout);  */   
-
-    //Stat.PrintStat(Reader.GetRequest(), std::cout);
     
-    json::Document doc_out(Reader.GetJSONByRequests(catalogue, Stat));
+    json::Document doc_out(Reader.GetJSONByRequests(catalogue, Stat, transport_router));
     json::Print(doc_out, std::cout);
 }

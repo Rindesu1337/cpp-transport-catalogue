@@ -16,6 +16,14 @@
 #include <vector>
 #include <string>
 
+struct EdgeSettings {
+        std::string type_;
+        double time_;
+        std::string stop_name_;
+        std::string bus_name_;
+        int span_count_;
+    };
+
 struct Stop {
 	std::string stop_name;
 	geo::Coordinates coordinates;
@@ -24,6 +32,7 @@ struct Stop {
 struct Bus {
 	std::string bus_name;
 	std::vector<Stop*> buses;
+	bool is_roundtrip;
 };
 
 struct InfoAboutRoute {
@@ -50,6 +59,13 @@ struct CommandRequest {
     std::string_view type;
     std::string_view name;
     int id;
+	std::string_view from;
+	std::string_view to;
+};
+
+struct RoutingSettings {
+	int bus_wait_time;
+	double bus_velocity;
 };
 
 

@@ -21,17 +21,20 @@ class JsonReader {
 
     void ApplyCommands(transport::TransportCatalogue& catalogue ) const;
 
-    json::Node GetJSONByRequests(transport::TransportCatalogue& catalogue, request::RequestHander& req_hend);
+    json::Node GetJSONByRequests(const transport::TransportCatalogue& catalogue, const request::RequestHander& req_hend,const tr::TransportRouter& tr_router);
 
     render::RenderSettings GetRenderSettings() const;
 
     std::vector<CommandForBus> GetCommandForBus() const;
+
+    const RoutingSettings& GetRoutingSettings() const;
 
 private:
     std::vector<CommandForStop> com_for_stops_;
     std::vector<CommandForBus> com_for_bus_;
     std::vector<CommandRequest> com_request_;
     render::RenderSettings render_s_;
+    RoutingSettings routing_setings_;
 };
 
 }
