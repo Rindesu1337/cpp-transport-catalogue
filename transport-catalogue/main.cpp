@@ -45,14 +45,11 @@ int main() {
 
     render::MapRender Render(Reader.GetRenderSettings());
 
-    graph::DirectedWeightedGraph<double> router_graph(catalogue.GetStopCounter()); // вершин 2 * кол-во остановок
+    graph::DirectedWeightedGraph<double> router_graph(catalogue.GetAllStops().size() * 2); // вершин 2 * кол-во остановок
 
     tr::TransportRouter transport_router(router_graph,catalogue, Reader.GetRoutingSettings());
-    transport_router.CreateGraph();
 
-    graph::Router<double> router(router_graph);
-
-    request::RequestHander Stat(catalogue, Render, router);
+    request::RequestHander Stat(catalogue, Render);
 
     Stat.GetCoordinatesForRoute(Reader.GetCommandForBus());
 

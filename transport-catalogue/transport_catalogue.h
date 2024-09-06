@@ -38,8 +38,6 @@ public:
 	Stop* FindStop(std::string_view name) const ;//поиск остановки по иени
 	InfoAboutRoute GetInfoAboutRoute(std::string_view name) const ;
 	std::vector<std::string_view> GetInfoAboutStop(std::string_view name) const;
-	size_t GetStopCounter() const;
-	std::pair<size_t, size_t> GetStopIndex(const Stop* stop) const;
 	const std::deque<Bus>& GetAllBuses() const;
 	std::optional<double> GetDistanseForPair(const Stop* stop_1, const Stop* stop_2) const;
 	const std::deque<Stop>& GetAllStops() const;
@@ -52,8 +50,6 @@ private:
 	std::unordered_map<std::string_view, Bus*> busname_to_route_;
 	std::unordered_map<std::string_view, std::unordered_set<std::string_view>> stop_get_buses_;
 	std::unordered_map<std::pair<const Stop*, const Stop*>, double, PairHasher> distanse_to_stops_;
-	std::unordered_map<const Stop*, std::pair<size_t, size_t>> stop_to_index_;
-	size_t counter_ = 0;
 };
 
 }

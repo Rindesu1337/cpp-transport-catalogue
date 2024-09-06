@@ -24,6 +24,11 @@ struct EdgeSettings {
         int span_count_;
     };
 
+struct RouteInfo {
+    std::vector<EdgeSettings> inf_edges;
+    double total_time;
+};
+
 struct Stop {
 	std::string stop_name;
 	geo::Coordinates coordinates;

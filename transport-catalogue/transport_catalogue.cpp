@@ -18,18 +18,6 @@ void TransportCatalogue::AddStop(std::string_view name, Coordinates shirina_viso
     stopname_to_stops_.insert({stops_.back().stop_name, &stops_.back()});
 
     stop_get_buses_[stops_.back().stop_name];
-
-    stop_to_index_[&stops_.back()].first = counter_; 
-    stop_to_index_[&stops_.back()].second = ++counter_;
-    ++counter_;
-}
-
-size_t TransportCatalogue::GetStopCounter() const {
-    return counter_;
-}
-
-std::pair<size_t, size_t> TransportCatalogue::GetStopIndex(const Stop* stop) const {
-    return stop_to_index_.at(stop);
 }
 
 const std::deque<Bus>& TransportCatalogue::GetAllBuses() const {

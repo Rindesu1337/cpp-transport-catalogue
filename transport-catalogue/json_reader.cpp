@@ -227,20 +227,20 @@ namespace json_reader {
 
         } else if (req.type == "Route"s) {
             result.StartDict();
-            std::optional<graph::Router<double>::RouteInfo> weith = req_hend.GetRoute(req.from, req.to);
+            //std::optional<graph::Router<double>::RouteInfo> weith = req_hend.GetRoute(req.from, req.to);
+            std::optional<RouteInfo> weith = tr_router.FindRoute(req.from, req.to);
             if (weith == std::nullopt) {
                 result.Key("error_message"s).Value("not found"s).Key("request_id"s).Value(req.id).EndDict();
             } else {
                 result.Key("items"s).StartArray();
-                for (auto&& id : (*weith).edges) {
-                    EdgeSettings edge_s = tr_router.GetEdgeSettings(id);
+                for (auto&& edge_s : (*weith).inf_edges) {
                     if (edge_s.type_ == "Wait"s) {
                         result.StartDict().Key("stop_name"s).Value(edge_s.stop_name_).Key("time"s).Value(edge_s.time_).Key("type"s).Value(edge_s.type_).EndDict();
                     } else if (edge_s.type_ == "Bus"s) {
                         result.StartDict().Key("bus"s).Value(edge_s.bus_name_).Key("span_count"s).Value(edge_s.span_count_).Key("time"s).Value(edge_s.time_).Key("type"s).Value(edge_s.type_).EndDict();
                     }
                 }
-                result.EndArray().Key("request_id"s).Value(req.id).Key("total_time"s).Value((*weith).weight).EndDict();
+                result.EndArray().Key("request_id"s).Value(req.id).Key("total_time"s).Value((*weith).total_time).EndDict();
             }
         }
     }
